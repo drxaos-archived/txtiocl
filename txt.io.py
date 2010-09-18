@@ -1,9 +1,13 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
 import os
 import urllib
 import urllib2
 import cookielib
 import re
 import getpass
+
 
 
 
@@ -18,11 +22,8 @@ user_txtio_account = "your-txtio-account"
 
 
 txtio_app_name = "txt.io"
-txtio_domain = "txt.io"
-
-target_authenticated_google_app_engine_uri = 'http://'+txtio_domain+'/'+user_txtio_account+'/m'
-
-
+txtio_url = "http://txt.io/"
+target_authenticated_google_app_engine_uri = txtio_url+user_txtio_account+'/m'
 
 # Asking for password
 user_gmail_password=getpass.getpass("Gmail password: ")
@@ -68,7 +69,7 @@ serv_args = {}
 serv_args['continue'] = serv_uri
 serv_args['auth']     = authtoken
 
-full_serv_uri = "http://"+txtio_domain+"/_ah/login?%s" % (urllib.urlencode(serv_args))
+full_serv_uri = txtio_url+"_ah/login?%s" % (urllib.urlencode(serv_args))
 
 serv_req = urllib2.Request(full_serv_uri)
 serv_resp = urllib2.urlopen(serv_req)
@@ -102,12 +103,13 @@ while control:
         if entry == ".":
             del user_input[-1]
             control = False
-user_input = '\n'.join(user_input)
+user_input = unicode('\n'.join(user_input))
 
+print user_input
 print
 
 # Posting message
-txtio_post_uri = "http://"+txtio_domain+"/txtcreate.do"
+txtio_post_uri = txtio_url+"txtcreate.do"
 txtio_post_data = urllib.urlencode({ "action": "- post -",
                                   "next":   user_txtio_account+"/m",
                                   "txt":    user_input,
@@ -120,15 +122,18 @@ txtio_post_resp_body = txtio_post_resp.read()
 
 
 # Extracting post uri
-matcher = re.search( ur"<div style=\"border:none;\"><a href=\"/([a-z0-9-]+)\" />", serv_resp_body )
-prev_post_uri = matcher.group(1)
+try:
+	matcher = re.search( ur"<div style=\"border:none;\"><a href=\"/([a-z0-9-]+)\" />", serv_resp_body )
+	prev_post_uri = matcher.group(1)
+except:
+	prev_post_uri = ""
 
 matcher = re.search( ur"<div style=\"border:none;\"><a href=\"/([a-z0-9-]+)\" />", txtio_post_resp_body )
 post_uri = matcher.group(1)
 
 if post_uri == prev_post_uri:
 	print "!!! Not posted !!!"
-	print "Check: " + "http://"+txtio_domain+"/"+user_txtio_account
+	print "Check: " + txtio_url+user_txtio_account
 else:
-	print "Posted: " + "http://"+txtio_domain+"/"+post_uri
+	print "Posted: " + txtio_url+post_uri
 
